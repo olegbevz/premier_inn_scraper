@@ -22,25 +22,27 @@ import json
 import csv
 from datetime import date
 
-from services.premier_inn_service import PremierInnService, Room, RoomType
+from services.models import Room, RoomType
+from services.premier_inn_service import PremierInnService
 
-OUTPUT_CSV    = "premier_inn_hotels.csv"
-OUTPUT_JSON   = "premier_inn_hotels.json"
-
+OUTPUT_CSV  = "output/premier_inn_search.csv"
+OUTPUT_JSON = "output/premier_inn_search.json"
 
 
 def save_csv(hotels: list[dict], path: str):
+    fields = ["hotel_id", "name", "county", "available", "price", "currency",
+              "distance_mi", "rooms_left"]
     with open(path, "w", newline="", encoding="utf-8-sig") as f:
-        writer = csv.DictWriter(f, fieldnames=["name", "address", "postcode"])
-        writer.writeheader()
-        writer.writerows(hotels)
-    print(f"✓ CSV  → {path}  ({len(hotels)} rows)")
+        w = csv.DictWriter(f, fieldnames=fields)
+        w.writeheader()
+        w.writerows(hotels)
+    print(f"✓ CSV  saved → {path}  ({len(hotels)} rows)")
 
 
 def save_json(hotels: list[dict], path: str):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(hotels, f, indent=2, ensure_ascii=False)
-    print(f"✓ JSON → {path}  ({len(hotels)} records)")
+    print(f"✓ JSON saved → {path}  ({len(hotels)} records)")
 
 
 def preview(hotels: list[dict], n: int = 20):
@@ -56,19 +58,31 @@ def preview(hotels: list[dict], n: int = 20):
 
 if __name__ == "__main__":
     service = PremierInnService()
-    hotels = service.get_hotels()
-    print(f"Found {len(hotels)} hotels.\n")
+    print(f"Fetching hotels with their counties")
+    countries = service.get_hotels()
+    print(f"Found hotels in {len(countries)} hotels.\n")
 
-    location = hotels[0]["address"]
     room = Room()
     room.adults = 2
     room.children = 2
     room.room_type = RoomType.FAMILY
     room.cot = 0
 
-    hotels = service.search(location, date(2026, 5, 3), [ room ])
+    start_date = date(2026, 5, 3)
+    total_hotels = list()
+    target_country = "England"
 
+    for country in countries:
+        if country.name == target_country:
+            for county in country.counties:
+                print(f"Fetching prices for hotels in {county.name} county")
+                county_hotels = service.search(county.name, start_date, [ room ])
+                for county_hotel in county_hotels:
+                    county_hotel["county"] = county.name
+                    total_hotels.append(county_hotel)
 
-    save_csv(hotels,  OUTPUT_CSV)
-    save_json(hotels, OUTPUT_JSON)
-    preview(hotels)
+    print(f"Found {len(total_hotels)} total hotels")
+
+    save_csv(total_hotels,  OUTPUT_CSV)
+    save_json(total_hotels, OUTPUT_JSON)
+    # preview(hotels)

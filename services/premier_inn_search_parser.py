@@ -100,40 +100,6 @@ class PremierInnSearchParser:
         ))
         return hotels
 
-    def save_csv(self, hotels: list[dict], path: str):
-        fields = ["hotel_id", "name", "available", "price", "currency",
-                  "distance_mi", "rooms_left"]
-        with open(path, "w", newline="", encoding="utf-8-sig") as f:
-            w = csv.DictWriter(f, fieldnames=fields)
-            w.writeheader()
-            w.writerows(hotels)
-        print(f"✓ CSV  saved → {path}  ({len(hotels)} rows)")
-
-    def save_json(hotels: list[dict], path: str):
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(hotels, f, indent=2, ensure_ascii=False)
-        print(f"✓ JSON saved → {path}  ({len(hotels)} records)")
-
-    def preview(hotels: list[dict], n: int = 20):
-        print(f"\n{'─' * 75}")
-        print(f"{'ID':<8} {'PRICE':>7}  {'AVAIL':<6} {'DIST':>6}  NAME")
-        print(f"{'─' * 75}")
-        for h in hotels[:n]:
-            price = f"£{h['price']:.0f}" if h["price"] is not None else "N/A"
-            avail = "✓" if h["available"] else "✗"
-            dist = f"{h['distance_mi']:.1f}mi" if h["distance_mi"] is not None else "?"
-            print(f"{h['hotel_id']:<8} {price:>7}  {avail:<6} {dist:>6}  {h['name']}")
-        if len(hotels) > n:
-            print(f"  … and {len(hotels) - n} more")
-        print(f"{'─' * 75}")
-
-        available = [h for h in hotels if h["available"]]
-        if available:
-            cheapest = available[0]
-            print(f"\n🏆 Cheapest available: {cheapest['name']}  "
-                  f"(£{cheapest['price']:.0f}, {cheapest['distance_mi']:.1f} miles, "
-                  f"ID: {cheapest['hotel_id']})")
-
     def parse_search(self, html: str) -> list[dict]:
         next_data = self.extract_next_data(html)
         return self.parse_hotels(next_data)
