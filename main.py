@@ -54,12 +54,7 @@ if __name__ == "__main__":
     countries = service.get_hotels()
     print(f"Found hotels in {len(countries)} hotels.\n")
 
-    room = Room()
-    room.adults = 2
-    room.children = 2
-    room.room_type = RoomType.FAMILY
-    room.cot = 0
-
+    room = Room(adults=2, children=2, room_type=RoomType.FAMILY,cot=0)
     start_date = date(2026, 5, 2)
     nights = 1
     total_hotels = list()

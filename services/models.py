@@ -47,6 +47,7 @@ class BookingChannel(str, Enum):
     WEB = "WEB"
     APP = "APP"
 
+@dataclass
 class Room:
     adults: int = 2
     children: int = 0
