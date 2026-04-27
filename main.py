@@ -38,13 +38,6 @@ def save_csv(hotels: list[dict], path: str):
         w.writerows(hotels)
     print(f"✓ CSV  saved → {path}  ({len(hotels)} rows)")
 
-
-def save_json(hotels: list[dict], path: str):
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(hotels, f, indent=2, ensure_ascii=False)
-    print(f"✓ JSON saved → {path}  ({len(hotels)} records)")
-
-
 def preview(hotels: list[dict], n: int = 20):
     print(f"\n{'─'*80}")
     print(f"{'NAME':<45} {'POSTCODE':<12} ADDRESS")
@@ -54,7 +47,6 @@ def preview(hotels: list[dict], n: int = 20):
     if len(hotels) > n:
         print(f"  … and {len(hotels) - n} more")
     print(f"{'─'*80}")
-
 
 if __name__ == "__main__":
     service = PremierInnService()
@@ -68,15 +60,17 @@ if __name__ == "__main__":
     room.room_type = RoomType.FAMILY
     room.cot = 0
 
-    start_date = date(2026, 5, 3)
+    start_date = date(2026, 5, 2)
+    nights = 1
     total_hotels = list()
     target_country = "England"
+    cheap_counties = set()
 
     for country in countries:
         if country.name == target_country:
             for county in country.counties:
                 print(f"Fetching prices for hotels in {county.name} county")
-                county_hotels = service.search(county.name, start_date, [ room ])
+                county_hotels = service.search(county.name, start_date, [ room ], nights)
                 for county_hotel in county_hotels:
                     county_hotel["county"] = county.name
                     total_hotels.append(county_hotel)
@@ -84,5 +78,3 @@ if __name__ == "__main__":
     print(f"Found {len(total_hotels)} total hotels")
 
     save_csv(total_hotels,  OUTPUT_CSV)
-    save_json(total_hotels, OUTPUT_JSON)
-    # preview(hotels)
